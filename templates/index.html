@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕷️ Scrape It!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.95em;
+        }
+
+        input[type="text"],
+        input[type="url"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+
+        .extract-fields {
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            background: #f9f9f9;
+        }
+
+        .extract-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .extract-item input {
+            flex: 1;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 6px 20px rgba(108, 117, 125, 0.6);
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            padding: 8px 15px;
+            font-size: 0.9em;
+            width: auto;
+            margin: 0;
+        }
+
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .results.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-section {
+            margin-bottom: 20px;
+        }
+
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .result-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-content.json {
+            background: #282c34;
+            color: #abb2bf;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .screenshot-preview {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 10px;
+        }
+
+        .extract-data {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .extract-item-key {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .extract-item-value {
+            color: #555;
+            padding-left: 15px;
+        }
+
+        .images-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .image-item {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .image-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .image-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            max-height: 200px;
+            object-fit: cover;
+        }
+
+        .image-item-info {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .image-item-info strong {
+            color: #667eea;
+        }
+
+        .image-item-src {
+            word-break: break-all;
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header" style="display: flex; flex-direction: column">
+        <div><h1>🕷️ Web Scraping Tool</h1></div>
+        <div><p style="padding-left: 50px; display:block;">Scrape your target webpages effortlessly.</p></div>
+    </div>
+
+    <div class="card">
+        <form id="scrapeForm">
+            <div class="form-group">
+                <label for="url">🌐 URL to Scrape</label>
+                <input type="url" id="url" name="url" placeholder="https://example.com" required>
+            </div>
+
+            <div class="grid">
+                <div class="form-group">
+                    <label for="selectorType">🎯 Selector Type</label>
+                    <select id="selectorType" name="selectorType">
+                        <option value="css">CSS Selector</option>
+                        <option value="xpath" selected>XPath</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="waitFor">⏳ Wait For (optional)</label>
+                    <input type="text" id="waitFor" name="waitFor" placeholder="//div[@class='content']">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="renderJs" name="renderJs" checked>
+                    <label for="renderJs">🚀 Render JavaScript</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="screenshot" name="screenshot">
+                    <label for="screenshot">📸 Take Screenshot</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="scrapeImages" name="scrapeImages">
+                    <label for="scrapeImages">🖼️ Scrape Images</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>📋 Extract Fields (Key: Selector)</label>
+                <div class="extract-fields" id="extractFields">
+                    <div class="extract-item">
+                        <input type="text" placeholder="Field name (e.g., title)" class="extract-key">
+                        <input type="text" placeholder="Selector (e.g., //h1/text())" class="extract-selector">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addExtractField()" style="margin-top: 10px;">➕
+                    Add Field
+                </button>
+            </div>
+
+            <button type="submit" class="btn">🚀 Scrape Now!</button>
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Scraping in progress... Please wait 🕷️</p>
+        </div>
+
+        <div class="results" id="results">
+            <div class="result-section">
+                <h3>📊 Status</h3>
+                <div id="statusInfo"></div>
+            </div>
+
+            <div class="result-section" id="extractedSection" style="display: none;">
+                <h3>📋 Extracted Data</h3>
+                <div id="extractedData" class="extract-data"></div>
+            </div>
+
+            <div class="result-section" id="htmlSection" style="display: none;">
+                <h3>📄 HTML Content</h3>
+                <div class="result-content" id="htmlContent"></div>
+            </div>
+
+            <div class="result-section" id="screenshotSection" style="display: none;">
+                <h3>📸 Screenshot</h3>
+                <img id="screenshotImg" class="screenshot-preview" alt="Screenshot">
+            </div>
+
+            <div class="result-section" id="imagesSection" style="display: none;">
+                <h3>🖼️ Scraped Images</h3>
+                <div id="imagesContainer" class="images-container"></div>
+            </div>
+
+            <div class="result-section">
+                <h3>📦 Full Response (JSON)</h3>
+                <div class="result-content json" id="jsonContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function addExtractField() {
+        const container = document.getElementById('extractFields');
+        const div = document.createElement('div');
+        div.className = 'extract-item';
+        div.innerHTML = `
+            <input type="text" placeholder="Field name" class="extract-key">
+            <input type="text" placeholder="Selector" class="extract-selector">
+            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">🗑️</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function getExtractFields() {
+        const items = document.querySelectorAll('.extract-item');
+        const extract = {};
+        items.forEach(item => {
+            const key = item.querySelector('.extract-key').value.trim();
+            const selector = item.querySelector('.extract-selector').value.trim();
+            if (key && selector) {
+                extract[key] = selector;
+            }
+        });
+        return Object.keys(extract).length > 0 ? extract : null;
+    }
+
+    document.getElementById('scrapeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const form = e.target;
+
+        loading.classList.add('show');
+        results.classList.remove('show');
+
+        const formData = {
+            url: document.getElementById('url').value,
+            render_js: document.getElementById('renderJs').checked,
+            selector_type: document.getElementById('selectorType').value,
+            screenshot: document.getElementById('screenshot').checked,
+            scrape_images: document.getElementById('scrapeImages').checked,
+            use_proxy: false,
+        };
+
+        const waitFor = document.getElementById('waitFor').value.trim();
+        if (waitFor) {
+            formData.wait_for = waitFor;
+        }
+
+        const extract = getExtractFields();
+        if (extract) {
+            formData.extract = extract;
+        }
+
+        try {
+            const response = await fetch('/scrape', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'accept': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            loading.classList.remove('show');
+            results.classList.add('show');
+
+            // Status
+            const statusInfo = document.getElementById('statusInfo');
+            if (response.ok && data.success) {
+                statusInfo.innerHTML = `
+                    <span class="status-badge status-success">✅ Success</span>
+                    <p><strong>URL:</strong> ${data.url}</p>
+                    <p><strong>Status Code:</strong> ${data.status_code}</p>
+                    <p><strong>Response Time:</strong> ${data.response_time || 'N/A'}s</p>
+                `;
+            } else {
+                statusInfo.innerHTML = `
+                    <span class="status-badge status-error">❌ Error</span>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Message:</strong> ${data.detail || JSON.stringify(data)}</p>
+                `;
+            }
+
+            // Extracted Data
+            if (data.extracted_data && Object.keys(data.extracted_data).length > 0) {
+                const extractedSection = document.getElementById('extractedSection');
+                const extractedData = document.getElementById('extractedData');
+                extractedSection.style.display = 'block';
+
+                let html = '';
+                for (const [key, value] of Object.entries(data.extracted_data)) {
+                    html += `<div class="extract-item-key">${key}:</div>`;
+                    html += `<div class="extract-item-value">${JSON.stringify(value, null, 2)}</div>`;
+                }
+                extractedData.innerHTML = html;
+            } else {
+                document.getElementById('extractedSection').style.display = 'none';
+            }
+
+            // HTML Content
+            if (data.html) {
+                const htmlSection = document.getElementById('htmlSection');
+                const htmlContent = document.getElementById('htmlContent');
+                htmlSection.style.display = 'block';
+                htmlContent.textContent = data.html.substring(0, 5000) + (data.html.length > 5000 ? '\n\n... (truncated)' : '');
+            } else {
+                document.getElementById('htmlSection').style.display = 'none';
+            }
+
+            // Screenshot
+            if (data.screenshot) {
+                const screenshotSection = document.getElementById('screenshotSection');
+                const screenshotImg = document.getElementById('screenshotImg');
+                screenshotSection.style.display = 'block';
+                screenshotImg.src = 'data:image/png;base64,' + data.screenshot;
+            } else {
+                document.getElementById('screenshotSection').style.display = 'none';
+            }
+
+            // Images
+            if (data.images && data.images.length > 0) {
+                const imagesSection = document.getElementById('imagesSection');
+                const imagesContainer = document.getElementById('imagesContainer');
+                imagesSection.style.display = 'block';
+
+                let html = '';
+                data.images.forEach((img, index) => {
+                    const src = img.src || '';
+                    const alt = img.alt || 'No alt text';
+                    const width = img.width || '';
+                    const height = img.height || '';
+                    const title = img.title || '';
+                    const imgClass = img.class || '';
+                    const imgId = img.id || '';
+
+                    // Handle relative URLs
+                    let imageSrc = src;
+                    if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                        try {
+                            const baseUrl = new URL(data.url);
+                            imageSrc = new URL(src, baseUrl).href;
+                        } catch (e) {
+                            imageSrc = src;
+                        }
+                    }
+
+                    html += `
+                        <div class="image-item">
+                            <img src="${imageSrc}" alt="${alt}"
+                                 onerror="this.style.display='none'; this.nextElementSibling.innerHTML='<div style=\\'color:red;\\'>Failed to load image</div>'">
+                            <div class="image-item-info">
+                                ${alt ? `<div><strong>Alt:</strong> ${alt}</div>` : ''}
+                                ${title ? `<div><strong>Title:</strong> ${title}</div>` : ''}
+                                ${width ? `<div><strong>Width:</strong> ${width}</div>` : ''}
+                                ${height ? `<div><strong>Height:</strong> ${height}</div>` : ''}
+                                ${imgClass ? `<div><strong>Class:</strong> ${imgClass}</div>` : ''}
+                                ${imgId ? `<div><strong>ID:</strong> ${imgId}</div>` : ''}
+                                <div class="image-item-src"><strong>Src:</strong> ${src}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                imagesContainer.innerHTML = html;
+            } else {
+                document.getElementById('imagesSection').style.display = 'none';
+            }
+
+            // JSON Response
+            document.getElementById('jsonContent').textContent = JSON.stringify(data, null, 2);
+
+        } catch (error) {
+            loading.classList.remove('show');
+            results.classList.add('show');
+
+            document.getElementById('statusInfo').innerHTML = `
+                <span class="status-badge status-error">❌ Error</span>
+                <p><strong>Error:</strong> ${error.message}</p>
+            `;
+
+            document.getElementById('jsonContent').textContent = JSON.stringify({error: error.message}, null, 2);
+        }
+    });
+</script>
+</body>
+</html>
+

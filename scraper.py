@@ -174,6 +174,37 @@ class WebScraper:
         
         return extracted
     
+    def _extract_images(self, html_content: str) -> list:
+        """
+        Extract all image elements from HTML content
+        
+        Returns:
+            List of dictionaries containing image attributes (src, alt, width, height, etc.)
+        """
+        images = []
+        soup = BeautifulSoup(html_content, 'lxml')
+        
+        for img in soup.find_all('img'):
+            image_data = {
+                'src': img.get('src', ''),
+                'alt': img.get('alt', ''),
+                'width': img.get('width', ''),
+                'height': img.get('height', ''),
+                'title': img.get('title', ''),
+                'class': img.get('class', []),
+                'id': img.get('id', '')
+            }
+            
+            # Convert class list to string if it's a list
+            if isinstance(image_data['class'], list):
+                image_data['class'] = ' '.join(image_data['class'])
+            
+            # Only add images with a src attribute
+            if image_data['src']:
+                images.append(image_data)
+        
+        return images
+    
     async def scrape(
         self,
         url: str,
@@ -182,6 +213,7 @@ class WebScraper:
         wait_for: Optional[str] = None,
         extract: Optional[Dict[str, str]] = None,
         screenshot: bool = False,
+        scrape_images: bool = False,
         use_proxy: bool = False,
         custom_headers: Optional[Dict[str, str]] = None
     ) -> Dict:
@@ -195,6 +227,7 @@ class WebScraper:
             wait_for: CSS selector or XPath to wait for (only with render_js=True)
             extract: Dictionary of selectors to extract data
             screenshot: Whether to take a screenshot (only with render_js=True)
+            scrape_images: Whether to extract all image elements from the page
             use_proxy: Whether to use proxy rotation
             custom_headers: Custom HTTP headers
         
@@ -232,6 +265,10 @@ class WebScraper:
                     selector_type
                 )
             
+            images = None
+            if scrape_images and result.get("html"):
+                images = self._extract_images(result["html"])
+            
             response_time = time.time() - start_time
             
             return {
@@ -239,6 +276,7 @@ class WebScraper:
                 "html": result["html"],
                 "extracted_data": extracted_data,
                 "screenshot": result.get("screenshot"),
+                "images": images,
                 "response_time": round(response_time, 2)
             }
         

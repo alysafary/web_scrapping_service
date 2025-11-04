@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Any, Literal
+from typing import Optional, Dict, Any, Literal, List
 
 from pydantic import BaseModel, HttpUrl, Field
 
@@ -17,6 +17,7 @@ class ScrapeRequest(BaseModel):
         description="Dictionary of field names and selectors (CSS or XPath) to extract"
     )
     screenshot: bool = Field(False, description="Take a screenshot of the page")
+    scrape_images: bool = Field(False, description="Extract all image elements from the page")
     use_proxy: bool = Field(False, description="Use proxy rotation")
     custom_headers: Optional[Dict[str, str]] = Field(
         None,
@@ -36,6 +37,7 @@ class ScrapeRequest(BaseModel):
                     "all_links": "//a/@href"
                 },
                 "screenshot": False,
+                "scrape_images": False,
                 "use_proxy": False
             }
         }
@@ -55,6 +57,10 @@ class ScrapeResponse(BaseModel):
         None,
         description="Base64 encoded screenshot (if requested)"
     )
+    images: Optional[List[Dict[str, Any]]] = Field(
+        None,
+        description="List of image elements with src, alt, and other attributes (if scrape_images=True)"
+    )
     response_time: Optional[float] = Field(
         None,
         description="Time taken to scrape in seconds"
@@ -72,6 +78,14 @@ class ScrapeResponse(BaseModel):
                     "description": "This domain is for use in examples"
                 },
                 "screenshot": None,
+                "images": [
+                    {
+                        "src": "https://example.com/image.jpg",
+                        "alt": "Example image",
+                        "width": "800",
+                        "height": "600"
+                    }
+                ],
                 "response_time": 1.23
             }
         }
