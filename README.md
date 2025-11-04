@@ -8,7 +8,6 @@ scraping web pages with JavaScript rendering support, proxy rotation, and data e
 - 🌐 **RESTful API** - Simple HTTP API for web scraping
 - 🎭 **JavaScript Rendering** - Scrape modern SPAs built with React, Vue, Angular, etc.
 - 🔄 **Proxy Rotation** - Basic proxy support to avoid rate limiting
-- 🔑 **API Key Authentication** - Secure your API with API keys
 - ⚡ **Rate Limiting** - Built-in rate limiting to prevent abuse
 - 📊 **Data Extraction** - Extract specific data using CSS selectors
 - 📸 **Screenshots** - Capture screenshots of web pages
@@ -55,10 +54,9 @@ poetry run playwright install chromium
 cp .env.example .env
 ```
 
-6. Edit `.env` and set your configuration:
+6. Edit `.env` and set your configuration (optional):
 
 ```env
-API_KEY=your-secret-api-key-here
 API_HOST=0.0.0.0
 API_PORT=8000
 ```
@@ -105,7 +103,6 @@ Scrape a webpage with optional JavaScript rendering and data extraction.
 **Request Headers:**
 
 ```
-X-API-Key: your-secret-api-key-here
 Content-Type: application/json
 ```
 
@@ -156,7 +153,6 @@ import requests
 
 url = "http://localhost:8000/scrape"
 headers = {
-    "X-API-Key": "your-secret-api-key-here",
     "Content-Type": "application/json"
 }
 
@@ -177,7 +173,6 @@ print(response.json())
 
 ```bash
 curl -X POST "http://localhost:8000/scrape" \
-  -H "X-API-Key: your-secret-api-key-here" \
   -H "Content-Type: application/json" \
   -d '{
     "url": "https://example.com",
@@ -194,16 +189,15 @@ curl -X POST "http://localhost:8000/scrape" \
 
 ### Environment Variables
 
-| Variable                | Description                  | Default                    |
-|-------------------------|------------------------------|----------------------------|
-| `API_KEY`               | API key for authentication   | `your-secret-api-key-here` |
-| `API_HOST`              | Host to bind the server      | `0.0.0.0`                  |
-| `API_PORT`              | Port to run the server       | `8000`                     |
-| `REDIS_HOST`            | Redis host for rate limiting | `localhost`                |
-| `REDIS_PORT`            | Redis port                   | `6379`                     |
-| `RATE_LIMIT_PER_MINUTE` | Requests per minute limit    | `60`                       |
-| `PROXY_ENABLED`         | Enable proxy rotation        | `false`                    |
-| `PROXY_LIST`            | Comma-separated proxy URLs   | ``                         |
+| Variable                | Description                  | Default     |
+|-------------------------|------------------------------|-------------|
+| `API_HOST`              | Host to bind the server      | `0.0.0.0`   |
+| `API_PORT`              | Port to run the server       | `8000`      |
+| `REDIS_HOST`            | Redis host for rate limiting | `localhost` |
+| `REDIS_PORT`            | Redis port                   | `6379`      |
+| `RATE_LIMIT_PER_MINUTE` | Requests per minute limit    | `60`        |
+| `PROXY_ENABLED`         | Enable proxy rotation        | `false`     |
+| `PROXY_LIST`            | Comma-separated proxy URLs   | ``          |
 
 ### Proxy Configuration
 
