@@ -33,9 +33,21 @@ class WebScraper:
     async def _init_browser(self):
         if not self.playwright:
             self.playwright = await async_playwright().start()
+            # Serverless-friendly browser launch args
+            # These are critical for running in constrained environments like Vercel
+            launch_args = [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',  # Overcome limited resource problems
+                '--disable-gpu',  # Disable GPU hardware acceleration
+                '--single-process',  # Run in single process mode (saves memory)
+                '--disable-background-timer-throttling',
+                '--disable-backgrounding-occluded-windows',
+                '--disable-renderer-backgrounding'
+            ]
             self.browser = await self.playwright.chromium.launch(
                 headless=True,
-                args=['--no-sandbox', '--disable-setuid-sandbox']
+                args=launch_args
             )
     
     async def _scrape_with_js(

@@ -14,7 +14,18 @@ from scraper import WebScraper
 
 load_dotenv()
 
-scraper = WebScraper()
+# Lazy initialization - don't create scraper at module level
+# This prevents issues with serverless functions where module-level
+# initialization can cause problems with Playwright browser binaries
+_scraper_instance: WebScraper = None
+
+
+def get_scraper() -> WebScraper:
+    """Get or create the scraper instance (lazy initialization)"""
+    global _scraper_instance
+    if _scraper_instance is None:
+        _scraper_instance = WebScraper()
+    return _scraper_instance
 
 
 @asynccontextmanager
@@ -24,7 +35,12 @@ async def lifespan(app: FastAPI):
     print(f"📝 API Documentation: http://localhost:{os.getenv('API_PORT', 8000)}/docs")
     yield
     # Shutdown
-    await scraper.close()
+    # In serverless, cleanup might not always run, but we try anyway
+    scraper = get_scraper()
+    try:
+        await scraper.close()
+    except Exception as e:
+        print(f"Warning: Error during cleanup: {e}")
     print("👋 Web Scraping Service shutting down...")
 
 
@@ -86,6 +102,8 @@ async def scrape_webpage(
     - use_proxy: Whether to use proxy rotation (default: False)
     """
     try:
+        # Get scraper instance (lazy initialization)
+        scraper = get_scraper()
         result = await scraper.scrape(
             url=str(body.url),
             render_js=body.render_js,
